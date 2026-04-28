@@ -1,0 +1,52 @@
+// All 36 states + Federal Capital Territory.
+export const NIGERIA_STATES = [
+  "Abia",
+  "Adamawa",
+  "Akwa Ibom",
+  "Anambra",
+  "Bauchi",
+  "Bayelsa",
+  "Benue",
+  "Borno",
+  "Cross River",
+  "Delta",
+  "Ebonyi",
+  "Edo",
+  "Ekiti",
+  "Enugu",
+  "Federal Capital Territory",
+  "Gombe",
+  "Imo",
+  "Jigawa",
+  "Kaduna",
+  "Kano",
+  "Katsina",
+  "Kebbi",
+  "Kogi",
+  "Kwara",
+  "Lagos",
+  "Nasarawa",
+  "Niger",
+  "Ogun",
+  "Ondo",
+  "Osun",
+  "Oyo",
+  "Plateau",
+  "Rivers",
+  "Sokoto",
+  "Taraba",
+  "Yobe",
+  "Zamfara",
+] as const;
+
+export type NigeriaState = (typeof NIGERIA_STATES)[number];
+
+// Useful for the home-page "Browse by state" tiles.
+export const FEATURED_STATES: NigeriaState[] = [
+  "Lagos",
+  "Federal Capital Territory",
+  "Rivers",
+  "Oyo",
+  "Ogun",
+  "Kano",
+];
