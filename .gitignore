@@ -6,3 +6,12 @@ node_modules
 .DS_Store
 .vercel
 *.log
+
+# TypeScript incremental build cache — must NOT be committed.
+# Nixpacks tries to mount this path as a cache directory; if a file
+# exists there the Docker build fails with "not a directory".
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# Next.js generated types
+next-env.d.ts
