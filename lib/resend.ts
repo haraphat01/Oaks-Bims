@@ -178,3 +178,92 @@ export function savedSearchAlertEmail(opts: {
     `,
   };
 }
+
+export function receiptEmail(opts: {
+  receiptNumber: string;
+  buyerName: string;
+  buyerEmail: string;
+  buyerPhone?: string | null;
+  propertyTitle?: string | null;
+  propertyLocation?: string | null;
+  amountNgn: number;
+  paymentMethod: string;
+  paymentRef?: string | null;
+  status: string;
+  notes?: string | null;
+  receiptUrl: string;
+  date: string;
+}) {
+  const fmt = (n: number) =>
+    "₦" + n.toLocaleString("en-NG", { minimumFractionDigits: 2 });
+  const statusColor = opts.status === "paid" ? "#0f5132" : opts.status === "partial" ? "#92400e" : "#991b1b";
+
+  return {
+    subject: `Payment receipt ${opts.receiptNumber} — Oaks & Bims`,
+    html: `
+      <div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#0f172a">
+        <!-- Header -->
+        <table width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:24px">
+          <tr>
+            <td>
+              <div style="font-weight:700;font-size:18px">Oaks &amp; Bims Nigeria Limited</div>
+              <div style="color:#64748b;font-size:12px">Lagos, Nigeria · oaksandbims.com</div>
+            </td>
+            <td style="text-align:right">
+              <span style="background:${statusColor};color:#fff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;text-transform:uppercase">${opts.status}</span>
+            </td>
+          </tr>
+        </table>
+
+        <h1 style="font-size:22px;margin:0 0 4px">Payment Receipt</h1>
+        <p style="color:#64748b;font-size:13px;margin:0 0 24px">
+          ${opts.receiptNumber} &nbsp;·&nbsp; ${opts.date}
+        </p>
+
+        <!-- Buyer / Property -->
+        <table width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:20px">
+          <tr>
+            <td style="vertical-align:top;padding-right:16px;width:50%">
+              <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#64748b;margin-bottom:6px">Received from</div>
+              <div style="font-weight:600">${opts.buyerName}</div>
+              <div style="color:#64748b;font-size:13px">${opts.buyerEmail}</div>
+              ${opts.buyerPhone ? `<div style="color:#64748b;font-size:13px">${opts.buyerPhone}</div>` : ""}
+            </td>
+            ${opts.propertyTitle ? `
+            <td style="vertical-align:top;width:50%">
+              <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#64748b;margin-bottom:6px">For property</div>
+              <div style="font-weight:600">${opts.propertyTitle}</div>
+              ${opts.propertyLocation ? `<div style="color:#64748b;font-size:13px">${opts.propertyLocation}</div>` : ""}
+            </td>` : ""}
+          </tr>
+        </table>
+
+        <!-- Amount box -->
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px 20px;margin-bottom:20px">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#166534;margin-bottom:4px">Amount paid</div>
+          <div style="font-size:28px;font-weight:700;color:#0f5132">${fmt(opts.amountNgn)}</div>
+        </div>
+
+        <!-- Payment details -->
+        <table width="100%" cellspacing="0" cellpadding="0" style="font-size:14px;margin-bottom:20px">
+          <tr><td style="color:#64748b;padding:4px 0;width:40%">Payment method</td><td style="font-weight:500">${opts.paymentMethod}</td></tr>
+          ${opts.paymentRef ? `<tr><td style="color:#64748b;padding:4px 0">Reference</td><td style="font-weight:500">${opts.paymentRef}</td></tr>` : ""}
+        </table>
+
+        ${opts.notes ? `
+        <div style="background:#f8fafc;border-left:3px solid #e2e8f0;padding:12px 16px;border-radius:0 6px 6px 0;font-size:13px;color:#475569;margin-bottom:20px">${opts.notes}</div>
+        ` : ""}
+
+        <p style="margin:20px 0">
+          <a href="${opts.receiptUrl}" style="background:#0f5132;color:#fff;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:600;display:inline-block;font-size:14px">View receipt online</a>
+        </p>
+
+        <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0"/>
+        <p style="color:#64748b;font-size:12px;margin:0">
+          Oaks &amp; Bims Nigeria Limited · RC: [Pending CAC]<br/>
+          This email confirms payment received. Keep it for your records.
+        </p>
+      </div>
+    `,
+  };
+}

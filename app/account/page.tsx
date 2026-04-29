@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Heart, Inbox, Mail, User, Bell } from "lucide-react";
+import { Heart, Inbox, User, Bell, Receipt } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { PropertyCard } from "@/components/property-card";
 import { SavedSearchManager } from "@/components/saved-search-manager";
-import type { Property } from "@/lib/types";
+import { Badge } from "@/components/ui/badge";
+import type { Property, Receipt as ReceiptType } from "@/lib/types";
 
 export const metadata = { title: "My account" };
 
@@ -41,6 +42,15 @@ export default async function AccountPage() {
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
+  const { data: receiptsData } = await supabase
+    .from("receipts")
+    .select("*, properties(title,city,state)")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+  const receipts = (receiptsData ?? []) as (ReceiptType & {
+    properties: { title: string; city: string; state: string } | null;
+  })[];
+
   return (
     <div className="container py-12 space-y-10">
       <div className="flex items-center justify-between">
@@ -52,10 +62,11 @@ export default async function AccountPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Stat icon={Heart} label="Saved properties" value={favorites.length} href="/account#favorites" />
-        <Stat icon={Inbox} label="Your inquiries" value={inquiryCount ?? 0} href="/account#inquiries" />
-        <Stat icon={Bell}  label="Search alerts" value={savedSearches?.length ?? 0} href="/account#alerts" />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Stat icon={Heart}    label="Saved properties" value={favorites.length}            href="/account#favorites" />
+        <Stat icon={Inbox}   label="Your inquiries"   value={inquiryCount ?? 0}           href="/account#inquiries" />
+        <Stat icon={Receipt} label="Receipts"         value={receipts.length}             href="/account#receipts" />
+        <Stat icon={Bell}    label="Search alerts"    value={savedSearches?.length ?? 0}  href="/account#alerts" />
       </div>
 
       <section id="favorites">
@@ -67,6 +78,47 @@ export default async function AccountPage() {
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {favorites.map((p) => <PropertyCard key={p.id} property={p} />)}
+          </div>
+        )}
+      </section>
+
+      {/* Receipts */}
+      <section id="receipts">
+        <h2 className="text-2xl font-serif font-semibold mb-4 flex items-center gap-2">
+          <Receipt className="h-5 w-5 text-primary" /> Payment receipts
+        </h2>
+        {receipts.length === 0 ? (
+          <div className="rounded-xl border border-dashed p-10 text-center text-sm text-muted-foreground">
+            No receipts on your account yet.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {receipts.map((r) => (
+              <div key={r.id} className="rounded-xl border bg-card p-4 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <div className="font-mono font-semibold text-primary text-sm">{r.receipt_number}</div>
+                  {r.properties && (
+                    <div className="text-sm text-muted-foreground mt-0.5">
+                      {r.properties.title} — {r.properties.city}, {r.properties.state}
+                    </div>
+                  )}
+                  <div className="text-xs text-muted-foreground mt-0.5">
+                    {new Date(r.created_at).toLocaleDateString("en-NG", { day: "numeric", month: "long", year: "numeric" })}
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="font-semibold">
+                    ₦{r.amount_ngn.toLocaleString("en-NG")}
+                  </div>
+                  <Badge
+                    variant={r.status === "paid" ? "success" : r.status === "partial" ? "warning" : "destructive"}
+                    className="capitalize"
+                  >
+                    {r.status}
+                  </Badge>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </section>

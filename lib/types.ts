@@ -97,6 +97,37 @@ export type Inquiry = {
   created_at: string;
 };
 
+export type PaymentMethod = "bank_transfer" | "cash" | "cheque" | "pos" | "online";
+export type ReceiptStatus = "paid" | "partial" | "cancelled";
+
+export const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
+  bank_transfer: "Bank Transfer",
+  cash: "Cash",
+  cheque: "Cheque",
+  pos: "POS / Card",
+  online: "Online Payment",
+};
+
+export type Receipt = {
+  id: string;
+  receipt_number: string;
+  inquiry_id: string | null;
+  property_id: string | null;
+  user_id: string | null;
+  buyer_name: string;
+  buyer_email: string;
+  buyer_phone: string | null;
+  buyer_address: string | null;
+  amount_ngn: number;
+  payment_method: PaymentMethod;
+  payment_ref: string | null;
+  notes: string | null;
+  status: ReceiptStatus;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type NewsletterSubscriber = {
   id: string;
   email: string;

@@ -29,6 +29,8 @@ export function PropertyForm({ mode, initial }: { mode: Mode; initial?: Property
   const [amenInput, setAmenInput] = useState("");
   const [videos, setVideos] = useState<string[]>(initial?.video_urls ?? []);
   const [videoInput, setVideoInput] = useState("");
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [videoUploadProgress, setVideoUploadProgress] = useState<string | null>(null);
 
   async function uploadFiles(files: FileList) {
     setUploading(true);
@@ -59,6 +61,33 @@ export function PropertyForm({ mode, initial }: { mode: Mode; initial?: Property
     if (!url || videos.includes(url)) { setVideoInput(""); return; }
     setVideos((curr) => [...curr, url]);
     setVideoInput("");
+  }
+
+  async function uploadVideoFile(file: File) {
+    const MAX_MB = 100;
+    if (file.size > MAX_MB * 1024 * 1024) {
+      setError(`Video exceeds ${MAX_MB} MB limit. Please compress it first.`);
+      return;
+    }
+    setUploadingVideo(true);
+    setVideoUploadProgress(`Uploading ${file.name}…`);
+    setError(null);
+    try {
+      const supabase = createClient();
+      const ext = file.name.split(".").pop()?.toLowerCase() || "mp4";
+      const path = `${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("property-videos")
+        .upload(path, file, { contentType: file.type, upsert: false });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from("property-videos").getPublicUrl(path);
+      setVideos((curr) => [...curr, data.publicUrl]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Video upload failed");
+    } finally {
+      setUploadingVideo(false);
+      setVideoUploadProgress(null);
+    }
   }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -264,19 +293,52 @@ export function PropertyForm({ mode, initial }: { mode: Mode; initial?: Property
 
       {/* Videos */}
       <Section title="Videos">
-        <Field
-          label="Add video URL"
-          hint="Paste a YouTube link, Vimeo link, or a direct .mp4 URL. Multiple videos are supported."
-        >
+        {/* — Upload — */}
+        <div>
+          <Label htmlFor="video-upload">Upload video file</Label>
+          <label
+            htmlFor="video-upload"
+            className={`mt-2 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed border-input p-8 text-sm text-muted-foreground transition hover:border-primary ${uploadingVideo ? "opacity-60 pointer-events-none" : ""}`}
+          >
+            <Video className="h-6 w-6" />
+            {uploadingVideo ? (
+              <span>{videoUploadProgress}</span>
+            ) : (
+              <>
+                <span className="font-medium">Click to choose a video</span>
+                <span className="text-xs">.mp4 · .mov · .webm — max 100 MB</span>
+              </>
+            )}
+            <input
+              id="video-upload"
+              type="file"
+              accept="video/mp4,video/webm,video/quicktime,video/ogg,.mp4,.mov,.webm"
+              className="hidden"
+              disabled={uploadingVideo}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) uploadVideoFile(file);
+                e.target.value = "";
+              }}
+            />
+          </label>
+        </div>
+
+        {/* — Divider — */}
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <div className="flex-1 border-t" />
+          or add by URL
+          <div className="flex-1 border-t" />
+        </div>
+
+        {/* — URL fallback — */}
+        <Field hint="YouTube, Vimeo, or a direct video link">
           <div className="flex gap-2">
             <Input
               value={videoInput}
               onChange={(e) => setVideoInput(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  addVideo();
-                }
+                if (e.key === "Enter") { e.preventDefault(); addVideo(); }
               }}
               placeholder="https://youtube.com/watch?v=… or https://vimeo.com/…"
             />
@@ -285,31 +347,32 @@ export function PropertyForm({ mode, initial }: { mode: Mode; initial?: Property
             </Button>
           </div>
         </Field>
+
+        {/* — Video list — */}
         {videos.length > 0 && (
           <div className="space-y-2">
             {videos.map((url) => {
               const parsed = parseVideoUrl(url);
-              const isValid = !!parsed;
               return (
                 <div
                   key={url}
                   className="flex items-center gap-3 rounded-lg border bg-secondary/30 px-3 py-2 text-sm"
                 >
-                  {isValid ? (
+                  {parsed ? (
                     <PlayCircle className="h-4 w-4 text-primary shrink-0" />
                   ) : (
                     <Video className="h-4 w-4 text-muted-foreground shrink-0" />
                   )}
-                  <span className="flex-1 truncate text-muted-foreground text-xs">
-                    <span className="font-medium text-foreground">
-                      {isValid ? videoLabel(url) : "Unknown format"}
-                    </span>{" "}
-                    — {url}
-                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-xs">
+                      {parsed ? videoLabel(url) : "Unknown format"}
+                    </div>
+                    <div className="text-xs text-muted-foreground truncate">{url}</div>
+                  </div>
                   <button
                     type="button"
                     onClick={() => setVideos((curr) => curr.filter((v) => v !== url))}
-                    className="text-muted-foreground hover:text-destructive"
+                    className="text-muted-foreground hover:text-destructive shrink-0"
                     aria-label="Remove video"
                   >
                     <X className="h-3.5 w-3.5" />
@@ -344,11 +407,11 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+function Field({ label, hint, children }: { label?: string; hint?: string; children: React.ReactNode }) {
   return (
     <div>
-      <Label>{label}</Label>
-      <div className="mt-1.5">{children}</div>
+      {label && <Label>{label}</Label>}
+      <div className={label ? "mt-1.5" : ""}>{children}</div>
       {hint && <p className="text-xs text-muted-foreground mt-1">{hint}</p>}
     </div>
   );

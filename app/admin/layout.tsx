@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { LayoutDashboard, Building2, Inbox, Users, Mail } from "lucide-react";
+import { LayoutDashboard, Building2, Inbox, Users, Mail, Receipt } from "lucide-react";
 
 export const metadata = { title: "Admin" };
 
@@ -21,6 +21,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     { href: "/admin",               label: "Dashboard",   icon: LayoutDashboard },
     { href: "/admin/properties",    label: "Properties",  icon: Building2 },
     { href: "/admin/inquiries",     label: "Inquiries",   icon: Inbox },
+    { href: "/admin/receipts",      label: "Receipts",    icon: Receipt },
     { href: "/admin/subscribers",   label: "Subscribers", icon: Users },
     { href: "/admin/newsletter",    label: "Newsletter",  icon: Mail },
   ];

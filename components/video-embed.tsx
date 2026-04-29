@@ -27,8 +27,8 @@ export function parseVideoUrl(url: string): ParsedVideo | null {
     };
   }
 
-  // Direct MP4 / video file
-  if (/\.(mp4|webm|ogg)(\?.*)?$/i.test(trimmed)) {
+  // Direct video file — mp4, webm, ogg, mov (QuickTime / iOS uploads)
+  if (/\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(trimmed)) {
     return { type: "direct", embedUrl: trimmed, originalUrl: trimmed };
   }
 
@@ -44,6 +44,7 @@ export function VideoEmbed({ url, title }: { url: string; title?: string }) {
       <video
         controls
         preload="metadata"
+        playsInline
         className="w-full rounded-xl aspect-video bg-black"
         aria-label={title}
       >
@@ -66,11 +67,17 @@ export function VideoEmbed({ url, title }: { url: string; title?: string }) {
   );
 }
 
-/** Returns a human-readable label for a video URL. */
+/** Human-readable label shown in the admin video list. */
 export function videoLabel(url: string): string {
   const parsed = parseVideoUrl(url);
-  if (!parsed) return url;
-  if (parsed.type === "youtube") return "YouTube video";
-  if (parsed.type === "vimeo") return "Vimeo video";
-  return "Video file";
+  if (!parsed) return "Unknown format";
+  if (parsed.type === "youtube") return "YouTube";
+  if (parsed.type === "vimeo") return "Vimeo";
+  // Extract the filename from the URL path (works for Supabase storage URLs too)
+  try {
+    const filename = new URL(url).pathname.split("/").pop();
+    return filename || "Uploaded video";
+  } catch {
+    return "Uploaded video";
+  }
 }

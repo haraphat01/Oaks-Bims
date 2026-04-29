@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ToggleHandled } from "@/components/admin/toggle-handled";
 import type { Inquiry } from "@/lib/types";
 
@@ -50,7 +51,12 @@ export default async function AdminInquiriesPage() {
                 </div>
               )}
               <p className="mt-3 text-sm whitespace-pre-line">{q.message}</p>
-              <div className="mt-3"><ToggleHandled id={q.id} initial={q.is_handled} /></div>
+              <div className="mt-3 flex items-center gap-3 flex-wrap">
+                <ToggleHandled id={q.id} initial={q.is_handled} />
+                <Button asChild variant="outline" size="sm">
+                  <Link href={`/admin/receipts/new?inquiry=${q.id}`}>Create receipt</Link>
+                </Button>
+              </div>
             </div>
           ))}
         </div>
