@@ -101,7 +101,7 @@ export function ReceiptDocument({ receipt: r, property }: Props) {
         </div>
         <div className="text-xs text-muted-foreground text-right self-end">
           <p>Oaks &amp; Bims Nigeria Limited</p>
-          <p>RC: [Pending CAC]</p>
+          <p>RC: 1754177</p>
           <p className="mt-1">This receipt confirms payment received.</p>
         </div>
       </div>

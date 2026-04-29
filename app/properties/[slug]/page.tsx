@@ -18,12 +18,29 @@ type Props = { params: { slug: string } };
 
 export async function generateMetadata({ params }: Props) {
   const supabase = createClient();
-  const { data } = await supabase.from("properties").select("title,description,cover_image_url").eq("slug", params.slug).single();
+  const { data } = await supabase
+    .from("properties")
+    .select("title,description,cover_image_url,city,state,price_ngn,purpose")
+    .eq("slug", params.slug)
+    .single();
   if (!data) return { title: "Property not found" };
+
+  const purposeLabel = data.purpose === "rent" ? "for rent" : data.purpose === "shortlet" ? "shortlet" : "for sale";
+  const locationLabel = [data.city, data.state, "Nigeria"].filter(Boolean).join(", ");
+
   return {
-    title: data.title,
-    description: data.description.slice(0, 160),
-    openGraph: { images: data.cover_image_url ? [data.cover_image_url] : [] },
+    title: `${data.title} — ${locationLabel}`,
+    description: `${data.title} ${purposeLabel} in ${locationLabel}. ${data.description.slice(0, 120)}`,
+    openGraph: {
+      title: `${data.title} — Oaks & Bims Nigeria`,
+      description: `${data.title} ${purposeLabel} in ${locationLabel}.`,
+      images: data.cover_image_url ? [{ url: data.cover_image_url, width: 1200, height: 800 }] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${data.title} — Oaks & Bims Nigeria`,
+      images: data.cover_image_url ? [data.cover_image_url] : [],
+    },
   };
 }
 
@@ -53,8 +70,41 @@ export default async function PropertyDetailPage({ params }: Props) {
   const cover = p.cover_image_url || p.image_urls[0] || null;
   const gallery = p.image_urls.length > 0 ? p.image_urls : cover ? [cover] : [];
 
+  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://oaksandbims.com";
+  const listingSchema = {
+    "@context": "https://schema.org",
+    "@type": "RealEstateListing",
+    name: p.title,
+    description: p.description,
+    url: `${base}/properties/${p.slug}`,
+    image: gallery,
+    datePosted: p.published_at ?? p.created_at,
+    offers: {
+      "@type": "Offer",
+      price: p.price_ngn,
+      priceCurrency: "NGN",
+      availability: "https://schema.org/InStock",
+    },
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: p.address ?? undefined,
+      addressLocality: p.city,
+      addressRegion: p.state,
+      addressCountry: "NG",
+    },
+    numberOfRooms: p.bedrooms > 0 ? p.bedrooms : undefined,
+    floorSize: p.area_sqm
+      ? { "@type": "QuantitativeValue", value: p.area_sqm, unitCode: "MTK" }
+      : undefined,
+    amenityFeature: p.features.map((f) => ({ "@type": "LocationFeatureSpecification", name: f, value: true })),
+  };
+
   return (
     <div className="container py-10 md:py-14">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(listingSchema) }}
+      />
       <RecentlyViewedTracker
         property={{
           slug: p.slug,

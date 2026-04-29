@@ -40,7 +40,7 @@ export function SiteFooter() {
       <div className="border-t">
         <div className="container py-6 flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
           <div>© {new Date().getFullYear()} Oaks &amp; Bims Nigeria Limited. All rights reserved.</div>
-          <div>RC: [Pending CAC]</div>
+          <div>RC: 1754177</div>
         </div>
       </div>
     </footer>
