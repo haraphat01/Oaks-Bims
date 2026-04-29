@@ -80,17 +80,116 @@ export function newListingsEmail(opts: {
 export function magicLinkEmail(opts: { magicLink: string }) {
   return {
     subject: "Your sign-in link — Oaks & Bims",
-    html: `
-      <div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#0f172a">
-        <h1 style="font-size:22px;margin:0 0 16px">Sign in to Oaks &amp; Bims</h1>
-        <p>Click the link below to sign in. It's good for 1 hour.</p>
-        <p style="margin:28px 0">
-          <a href="${opts.magicLink}" style="background:#0f5132;color:#fff;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:600;display:inline-block">Sign in</a>
-        </p>
-        <p style="color:#64748b;font-size:13px">If you didn't request this, just ignore the email.</p>
-      </div>
-    `,
+    html: authEmailShell({
+      heading: "Sign in to Oaks &amp; Bims",
+      body: "Click the button below to sign in. This link is valid for 1 hour.",
+      ctaLabel: "Sign in",
+      ctaUrl: opts.magicLink,
+      footnote: "If you didn't request this, you can safely ignore it.",
+    }),
   };
+}
+
+export function authConfirmEmail(opts: {
+  fullName?: string | null;
+  confirmUrl: string;
+  isEmailChange?: boolean;
+}) {
+  const name = opts.fullName ? opts.fullName.split(" ")[0] : "there";
+  return opts.isEmailChange
+    ? {
+        subject: "Confirm your new email address — Oaks & Bims",
+        html: authEmailShell({
+          heading: `Confirm your new email, ${name}.`,
+          body: "We received a request to update the email address on your Oaks &amp; Bims account. Click the button below to confirm the change.",
+          ctaLabel: "Confirm new email",
+          ctaUrl: opts.confirmUrl,
+          footnote: "If you didn't request this change, please ignore this email — your address won't be updated.",
+        }),
+      }
+    : {
+        subject: "Confirm your email — Oaks & Bims",
+        html: authEmailShell({
+          heading: `Welcome, ${name}. One last step.`,
+          body: "Thanks for creating your Oaks &amp; Bims account. Click the button below to confirm your email and activate your account.",
+          ctaLabel: "Confirm email",
+          ctaUrl: opts.confirmUrl,
+          footnote: "If you didn't sign up, you can safely ignore this email.",
+        }),
+      };
+}
+
+export function passwordResetEmail(opts: {
+  fullName?: string | null;
+  resetUrl: string;
+}) {
+  const name = opts.fullName ? opts.fullName.split(" ")[0] : "there";
+  return {
+    subject: "Reset your password — Oaks & Bims",
+    html: authEmailShell({
+      heading: `Reset your password, ${name}.`,
+      body: "We received a request to reset the password on your Oaks &amp; Bims account. Click the button below to create a new one. This link expires in 1 hour.",
+      ctaLabel: "Reset password",
+      ctaUrl: opts.resetUrl,
+      footnote: "If you didn't request a password reset, you can safely ignore this email — your password won't change.",
+    }),
+  };
+}
+
+/** Shared HTML shell for all auth-related emails. */
+function authEmailShell(opts: {
+  heading: string;
+  body: string;
+  ctaLabel: string;
+  ctaUrl: string;
+  footnote: string;
+}) {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:system-ui,-apple-system,Segoe UI,sans-serif">
+  <table width="100%" cellspacing="0" cellpadding="0" style="background:#f1f5f9;padding:40px 16px">
+    <tr><td align="center">
+      <table width="100%" cellspacing="0" cellpadding="0" style="max-width:520px;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08)">
+        <!-- Header -->
+        <tr><td style="background:#0f5132;padding:28px 36px">
+          <table cellspacing="0" cellpadding="0">
+            <tr>
+              <td style="width:36px;height:36px;background:white;border-radius:7px;text-align:center;vertical-align:middle">
+                <span style="color:#0f5132;font-size:20px;font-weight:800;font-family:Georgia,serif;line-height:36px">O</span>
+              </td>
+              <td style="padding-left:12px">
+                <span style="color:white;font-weight:700;font-size:17px">Oaks &amp; Bims</span><br/>
+                <span style="color:rgba(255,255,255,.55);font-size:11px;letter-spacing:.1em;text-transform:uppercase">Nigeria Limited</span>
+              </td>
+            </tr>
+          </table>
+        </td></tr>
+        <!-- Body -->
+        <tr><td style="padding:36px 36px 28px">
+          <h1 style="margin:0 0 14px;font-size:22px;font-weight:700;color:#0f172a;line-height:1.3">${opts.heading}</h1>
+          <p style="margin:0 0 28px;font-size:15px;line-height:1.7;color:#475569">${opts.body}</p>
+          <a href="${opts.ctaUrl}"
+             style="display:inline-block;background:#0f5132;color:#ffffff;text-decoration:none;padding:13px 28px;border-radius:8px;font-weight:600;font-size:15px">
+            ${opts.ctaLabel}
+          </a>
+          <p style="margin:24px 0 0;font-size:12px;color:#94a3b8;line-height:1.6">
+            If the button doesn't work, copy and paste this link into your browser:<br/>
+            <a href="${opts.ctaUrl}" style="color:#0f5132;word-break:break-all">${opts.ctaUrl}</a>
+          </p>
+        </td></tr>
+        <!-- Footer -->
+        <tr><td style="border-top:1px solid #e2e8f0;padding:20px 36px;background:#f8fafc">
+          <p style="margin:0;font-size:12px;color:#94a3b8;line-height:1.6">
+            ${opts.footnote}<br/>
+            &mdash; Oaks &amp; Bims Nigeria Limited &nbsp;·&nbsp; RC: 1754177
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
 }
 
 export function adminInquiryAlertEmail(opts: {
