@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { Building2, Inbox, Users, AlertCircle, Receipt } from "lucide-react";
+import { Building2, Inbox, Users, AlertCircle, Receipt, TrendingUp } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function AdminDashboard() {
   const supabase = createClient();
 
-  const [propsRes, availRes, inqRes, openInqRes, subsRes, confSubsRes, receiptsRes] = await Promise.all([
+  const [propsRes, availRes, inqRes, openInqRes, subsRes, confSubsRes, receiptsRes, revenueRes] = await Promise.all([
     supabase.from("properties").select("id", { count: "exact", head: true }),
     supabase.from("properties").select("id", { count: "exact", head: true }).eq("status", "available"),
     supabase.from("inquiries").select("id", { count: "exact", head: true }),
@@ -13,15 +13,19 @@ export default async function AdminDashboard() {
     supabase.from("newsletter_subscribers").select("id", { count: "exact", head: true }),
     supabase.from("newsletter_subscribers").select("id", { count: "exact", head: true }).eq("is_confirmed", true),
     supabase.from("receipts").select("id", { count: "exact", head: true }),
+    supabase.from("receipts").select("amount_ngn").neq("status", "cancelled"),
   ]);
 
+  const totalRevenue = (revenueRes.data ?? []).reduce((s, r) => s + Number(r.amount_ngn), 0);
+  const fmtNgn = (n: number) => "₦" + n.toLocaleString("en-NG", { maximumFractionDigits: 0 });
+
   const stats = [
-    { label: "Total properties",       value: propsRes.count ?? 0,      icon: Building2,  href: "/admin/properties" },
+    { label: "Total revenue",          value: fmtNgn(totalRevenue),     icon: TrendingUp, href: "/admin/sales" },
     { label: "Available listings",     value: availRes.count ?? 0,      icon: Building2,  href: "/admin/properties" },
     { label: "Open inquiries",         value: openInqRes.count ?? 0,    icon: AlertCircle,href: "/admin/inquiries" },
-    { label: "Total inquiries",        value: inqRes.count ?? 0,        icon: Inbox,      href: "/admin/inquiries" },
     { label: "Receipts issued",        value: receiptsRes.count ?? 0,   icon: Receipt,    href: "/admin/receipts" },
     { label: "Confirmed subscribers",  value: confSubsRes.count ?? 0,   icon: Users,      href: "/admin/subscribers" },
+    { label: "Total properties",       value: propsRes.count ?? 0,      icon: Building2,  href: "/admin/properties" },
   ];
 
   return (
@@ -45,6 +49,7 @@ export default async function AdminDashboard() {
         <div className="mt-3 flex flex-wrap gap-2 text-sm">
           <Link href="/admin/properties/new" className="rounded-md border px-3 py-2 hover:bg-accent">+ New property</Link>
           <Link href="/admin/receipts/new" className="rounded-md border px-3 py-2 hover:bg-accent">+ New receipt</Link>
+          <Link href="/admin/sales" className="rounded-md border px-3 py-2 hover:bg-accent">Sales report</Link>
           <Link href="/admin/newsletter" className="rounded-md border px-3 py-2 hover:bg-accent">Send newsletter</Link>
           <Link href="/admin/inquiries" className="rounded-md border px-3 py-2 hover:bg-accent">View inquiries</Link>
         </div>
