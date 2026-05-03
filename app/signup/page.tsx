@@ -20,19 +20,27 @@ export default function SignupPage() {
     const fd = new FormData(e.currentTarget);
     const email = String(fd.get("email") ?? "");
     const password = String(fd.get("password") ?? "");
-    const fullName = String(fd.get("full_name") ?? "");
+    const full_name = String(fd.get("full_name") ?? "");
+
+    const originRes = await fetch("/api/auth/site-url");
+    const originPayload = (await originRes.json().catch(() => ({}))) as { site?: string };
+    const site =
+      originRes.ok && typeof originPayload.site === "string"
+        ? originPayload.site
+        : window.location.origin;
 
     const supabase = createClient();
-    const { error } = await supabase.auth.signUp({
+    const { error: signErr } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { full_name: fullName },
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || location.origin}/auth/callback`,
+        data: { full_name },
+        emailRedirectTo: `${site}/auth/callback`,
       },
     });
+
     setLoading(false);
-    if (error) return setError(error.message);
+    if (signErr) return setError(signErr.message);
     setSuccess(true);
   }
 

@@ -3,27 +3,56 @@ import { Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { Receipt } from "@/lib/types";
+import { AdminSearch } from "@/components/admin/admin-search";
+import { AdminPagination } from "@/components/admin/admin-pagination";
+import { AdminSelectFilter } from "@/components/admin/admin-select-filter";
+import type { Receipt, ReceiptStatus } from "@/lib/types";
 
 export const metadata = { title: "Receipts" };
+
+const PAGE_SIZE = 25;
+
+const STATUS_OPTIONS = [
+  { value: "", label: "All statuses" },
+  { value: "paid", label: "Paid" },
+  { value: "partial", label: "Partial" },
+  { value: "cancelled", label: "Cancelled" },
+];
 
 const STATUS_VARIANT: Record<string, "success" | "warning" | "destructive"> = {
   paid: "success", partial: "warning", cancelled: "destructive",
 };
 
-export default async function AdminReceiptsPage() {
-  const supabase = createClient();
-  const { data } = await supabase
-    .from("receipts")
-    .select("*, properties(title,city,state)")
-    .order("created_at", { ascending: false })
-    .limit(200);
+const fmt = (n: number) => "₦" + n.toLocaleString("en-NG");
 
+export default async function AdminReceiptsPage({
+  searchParams,
+}: {
+  searchParams: { q?: string; page?: string; status?: string };
+}) {
+  const supabase = createClient();
+  const q = typeof searchParams.q === "string" ? searchParams.q.trim() : "";
+  const status = typeof searchParams.status === "string" ? searchParams.status : "";
+  const page = Math.max(1, parseInt(typeof searchParams.page === "string" ? searchParams.page : "1", 10) || 1);
+
+  let query = supabase
+    .from("receipts")
+    .select("*, properties(title,city,state)", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
+
+  if (q) query = query.or(`buyer_name.ilike.%${q}%,receipt_number.ilike.%${q}%,buyer_email.ilike.%${q}%`);
+  if (status) query = query.eq("status", status as ReceiptStatus);
+
+  const { data, count } = await query;
   const receipts = (data ?? []) as (Receipt & {
     properties: { title: string; city: string; state: string } | null;
   })[];
+  const total = count ?? 0;
 
-  const fmt = (n: number) => "₦" + n.toLocaleString("en-NG");
+  const paginationParams = new URLSearchParams();
+  if (q) paginationParams.set("q", q);
+  if (status) paginationParams.set("status", status);
 
   return (
     <div className="space-y-6">
@@ -39,12 +68,19 @@ export default async function AdminReceiptsPage() {
         </Button>
       </div>
 
+      <div className="flex items-center gap-3 flex-wrap">
+        <AdminSearch defaultValue={q} placeholder="Search buyer, email, receipt #…" />
+        <AdminSelectFilter param="status" defaultValue={status} options={STATUS_OPTIONS} />
+      </div>
+
       {receipts.length === 0 ? (
         <div className="rounded-xl border border-dashed p-14 text-center text-sm text-muted-foreground">
-          No receipts yet.{" "}
-          <Link href="/admin/receipts/new" className="text-primary hover:underline">
-            Create the first one.
-          </Link>
+          No receipts found.{" "}
+          {!q && !status && (
+            <Link href="/admin/receipts/new" className="text-primary hover:underline">
+              Create the first one.
+            </Link>
+          )}
         </div>
       ) : (
         <div className="rounded-xl border overflow-hidden">
@@ -66,7 +102,7 @@ export default async function AdminReceiptsPage() {
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">
                     {r.properties ? (
-                      <span>{r.properties.title}<br/><span className="text-xs">{r.properties.city}, {r.properties.state}</span></span>
+                      <span>{r.properties.title}<br /><span className="text-xs">{r.properties.city}, {r.properties.state}</span></span>
                     ) : "—"}
                   </td>
                   <td className="px-4 py-3 font-semibold">{fmt(r.amount_ngn)}</td>
@@ -90,6 +126,8 @@ export default async function AdminReceiptsPage() {
           </table>
         </div>
       )}
+
+      <AdminPagination page={page} total={total} pageSize={PAGE_SIZE} paramsStr={paginationParams.toString()} />
     </div>
   );
 }

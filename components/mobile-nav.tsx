@@ -16,6 +16,7 @@ const NAV_LINKS = [
   { href: "/properties?purpose=sale", label: "Buy" },
   { href: "/properties?purpose=rent", label: "Rent" },
   { href: "/properties?property_type=land", label: "Land" },
+  { href: "/mortgage-calculator", label: "Mortgage Calculator" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ];

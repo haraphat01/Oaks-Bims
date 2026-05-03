@@ -1,7 +1,7 @@
 import { Suspense } from "react";
-import { PropertyCard } from "@/components/property-card";
 import { PropertyFilters } from "@/components/property-filters";
 import { SaveSearchButton } from "@/components/save-search-button";
+import { PropertiesViewToggle } from "@/components/properties-view-toggle";
 import { createClient } from "@/lib/supabase/server";
 import type { ListingPurpose, Property, PropertyType } from "@/lib/types";
 
@@ -96,9 +96,7 @@ export default async function PropertiesPage({
           </p>
         </div>
       ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {properties.map((p) => <PropertyCard key={p.id} property={p} />)}
-        </div>
+        <PropertiesViewToggle properties={properties} />
       )}
     </div>
   );

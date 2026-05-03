@@ -33,6 +33,7 @@ export async function SiteHeader() {
           <Link href="/properties?purpose=sale" className="hover:text-primary transition-colors">Buy</Link>
           <Link href="/properties?purpose=rent" className="hover:text-primary transition-colors">Rent</Link>
           <Link href="/properties?property_type=land" className="hover:text-primary transition-colors">Land</Link>
+          <Link href="/mortgage-calculator" className="hover:text-primary transition-colors">Calculator</Link>
           <Link href="/about" className="hover:text-primary transition-colors">About</Link>
           <Link href="/contact" className="hover:text-primary transition-colors">Contact</Link>
         </nav>

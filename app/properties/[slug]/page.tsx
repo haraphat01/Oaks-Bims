@@ -1,11 +1,15 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import { BedDouble, Bath, Maximize2, MapPin, Calendar, Car, Home, Tag } from "lucide-react";
+import Link from "next/link";
+import { BedDouble, Bath, Maximize2, MapPin, Calendar, Car, Home, Tag, Calculator } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { PriceDisplay } from "@/components/price-display";
 import { InquiryForm } from "@/components/inquiry-form";
 import { FavoriteButton } from "@/components/favorite-button";
+import { CompareButton } from "@/components/compare-button";
+import { MortgageCalculator } from "@/components/mortgage-calculator";
 import { ShareButtons } from "@/components/share-buttons";
 import { RecentlyViewedTracker } from "@/components/recently-viewed-tracker";
 import { RecentlyViewed } from "@/components/recently-viewed";
@@ -140,6 +144,7 @@ export default async function PropertyDetailPage({ params }: Props) {
               {p.purpose === "shortlet" && <div className="text-xs text-muted-foreground">per night</div>}
             </div>
             <FavoriteButton propertyId={p.id} initial={isFav} loggedIn={!!user} />
+            <CompareButton property={p} />
           </div>
         </div>
 
@@ -234,6 +239,28 @@ export default async function PropertyDetailPage({ params }: Props) {
           </div>
         </aside>
       </div>
+
+      {/* Mortgage calculator — only for sale properties */}
+      {p.purpose === "sale" && (
+        <div className="mt-10 md:mt-12">
+          <MortgageCalculator defaultPrice={p.price_ngn} />
+        </div>
+      )}
+
+      {p.purpose !== "sale" && (
+        <div className="mt-8 rounded-xl border bg-card/60 p-5 flex items-center justify-between gap-4">
+          <div>
+            <div className="font-medium">Thinking of buying instead?</div>
+            <div className="text-sm text-muted-foreground mt-0.5">Estimate your mortgage repayments with our calculator.</div>
+          </div>
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/mortgage-calculator?price=${p.price_ngn}`}>
+              <Calculator className="h-4 w-4" />
+              Calculator
+            </Link>
+          </Button>
+        </div>
+      )}
 
       <RecentlyViewed excludeSlug={p.slug} />
     </div>

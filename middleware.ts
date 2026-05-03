@@ -7,7 +7,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // run on everything except static assets / api / image-optim
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    // run on everything except static assets, image optim, Supabase send-email webhook
+    "/((?!_next/static|_next/image|favicon.ico|api/auth/send-email|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

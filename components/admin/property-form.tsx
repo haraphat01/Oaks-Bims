@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { createClient } from "@/lib/supabase/client";
 import { slugify } from "@/lib/utils";
 import { NIGERIA_STATES } from "@/lib/nigeria-states";
@@ -23,6 +24,7 @@ export function PropertyForm({ mode, initial }: { mode: Mode; initial?: Property
   const [error, setError] = useState<string | null>(null);
   const [images, setImages] = useState<string[]>(initial?.image_urls ?? []);
   const [uploading, setUploading] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [features, setFeatures] = useState<string[]>(initial?.features ?? []);
   const [amenities, setAmenities] = useState<string[]>(initial?.amenities ?? []);
   const [featInput, setFeatInput] = useState("");
@@ -149,12 +151,11 @@ export function PropertyForm({ mode, initial }: { mode: Mode; initial?: Property
     });
   }
 
-  async function deleteProperty() {
+  async function confirmDeleteProperty() {
     if (!initial) return;
-    if (!confirm("Delete this property? This can't be undone.")) return;
     const supabase = createClient();
     const { error } = await supabase.from("properties").delete().eq("id", initial.id);
-    if (error) return setError(error.message);
+    if (error) { setError(error.message); setShowDeleteConfirm(false); return; }
     router.push("/admin/properties");
     router.refresh();
   }
@@ -391,9 +392,19 @@ export function PropertyForm({ mode, initial }: { mode: Mode; initial?: Property
           {pending ? "Saving…" : mode === "create" ? "Create property" : "Save changes"}
         </Button>
         {mode === "edit" && (
-          <Button type="button" variant="destructive" onClick={deleteProperty}>Delete</Button>
+          <Button type="button" variant="destructive" onClick={() => setShowDeleteConfirm(true)}>Delete</Button>
         )}
       </div>
+
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title="Delete property"
+        description="Are you sure you want to permanently delete this property? This cannot be undone."
+        confirmLabel="Delete"
+        destructive
+        onConfirm={confirmDeleteProperty}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
     </form>
   );
 }

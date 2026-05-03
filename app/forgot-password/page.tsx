@@ -16,12 +16,21 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     setError(null);
     const email = String(new FormData(e.currentTarget).get("email") ?? "");
+
+    const originRes = await fetch("/api/auth/site-url");
+    const originPayload = (await originRes.json().catch(() => ({}))) as { site?: string };
+    const site =
+      originRes.ok && typeof originPayload.site === "string"
+        ? originPayload.site
+        : window.location.origin;
+
     const supabase = createClient();
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || location.origin}/auth/callback?next=/reset-password`,
+    const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${site}/auth/callback?next=/reset-password`,
     });
+
     setLoading(false);
-    if (error) return setError(error.message);
+    if (resetErr) return setError(resetErr.message);
     setSent(true);
   }
 
