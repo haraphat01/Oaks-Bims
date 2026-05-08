@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { PriceDisplay } from "@/components/price-display";
 import { InquiryForm } from "@/components/inquiry-form";
 import { FavoriteButton } from "@/components/favorite-button";
-import { CompareButton } from "@/components/compare-button";
 import { MortgageCalculator } from "@/components/mortgage-calculator";
 import { ShareButtons } from "@/components/share-buttons";
 import { RecentlyViewedTracker } from "@/components/recently-viewed-tracker";
@@ -144,7 +143,6 @@ export default async function PropertyDetailPage({ params }: Props) {
               {p.purpose === "shortlet" && <div className="text-xs text-muted-foreground">per night</div>}
             </div>
             <FavoriteButton propertyId={p.id} initial={isFav} loggedIn={!!user} />
-            <CompareButton property={p} />
           </div>
         </div>
 
@@ -160,15 +158,23 @@ export default async function PropertyDetailPage({ params }: Props) {
 
       {/* Gallery */}
       {gallery.length > 0 && (
-        <div className="grid gap-2 md:grid-cols-4 md:grid-rows-2 rounded-xl overflow-hidden">
-          <div className="relative md:col-span-2 md:row-span-2 aspect-[4/3] md:aspect-auto bg-muted">
-            <Image src={gallery[0]} alt={p.title} fill className="object-cover" sizes="(max-width:768px) 100vw, 50vw" priority />
+        <div className="rounded-xl overflow-hidden">
+          {/* Mobile — single full-width image */}
+          <div className="relative aspect-[4/3] bg-muted md:hidden">
+            <Image src={gallery[0]} alt={p.title} fill className="object-cover" sizes="100vw" priority />
           </div>
-          {gallery.slice(1, 5).map((src, i) => (
-            <div key={i} className="relative hidden md:block aspect-square bg-muted">
-              <Image src={src} alt="" fill className="object-cover" sizes="25vw" />
+
+          {/* Desktop — main image left, up to 4 thumbnails right */}
+          <div className="hidden md:grid md:grid-cols-4 md:grid-rows-2 gap-2 h-[480px]">
+            <div className="relative col-span-2 row-span-2 bg-muted">
+              <Image src={gallery[0]} alt={p.title} fill className="object-cover" sizes="50vw" priority />
             </div>
-          ))}
+            {gallery.slice(1, 5).map((src, i) => (
+              <div key={i} className="relative bg-muted">
+                <Image src={src} alt="" fill className="object-cover" sizes="25vw" />
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

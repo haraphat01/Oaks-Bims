@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { CurrencyProvider } from "@/components/currency-provider";
-import { ComparisonProvider } from "@/components/comparison-provider";
-import { ComparisonBar } from "@/components/comparison-bar";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { WhatsAppButton } from "@/components/whatsapp-button";
@@ -138,13 +136,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-screen flex flex-col font-sans">
         <CurrencyProvider>
-          <ComparisonProvider>
-            <SiteHeader />
-            <main className="flex-1">{children}</main>
-            <SiteFooter />
-            <WhatsAppButton />
-            <ComparisonBar />
-          </ComparisonProvider>
+          <SiteHeader />
+          <main className="flex-1">{children}</main>
+          <SiteFooter />
+          <WhatsAppButton />
         </CurrencyProvider>
       </body>
     </html>

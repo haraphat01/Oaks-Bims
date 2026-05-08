@@ -3,7 +3,6 @@ import Link from "next/link";
 import { BedDouble, Bath, Maximize2, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { PriceDisplay } from "@/components/price-display";
-import { CompareButton } from "@/components/compare-button";
 import { PROPERTY_TYPE_LABEL, type Property } from "@/lib/types";
 
 export function PropertyCard({ property }: { property: Property }) {
@@ -29,9 +28,7 @@ export function PropertyCard({ property }: { property: Property }) {
           <Badge variant="default" className="capitalize">{property.purpose}</Badge>
           {property.is_featured && <Badge variant="warning">Featured</Badge>}
         </div>
-        <div className="absolute top-2 right-2">
-          <CompareButton property={property} compact />
-        </div>
+
       </div>
 
       <div className="p-4 space-y-2">
