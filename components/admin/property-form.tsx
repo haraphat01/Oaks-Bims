@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { createClient } from "@/lib/supabase/client";
+import { processPropertyImage } from "@/lib/watermark";
 import { slugify } from "@/lib/utils";
 import { NIGERIA_STATES } from "@/lib/nigeria-states";
 import { PROPERTY_TYPES, PROPERTY_TYPE_LABEL, type Property } from "@/lib/types";
@@ -41,11 +42,12 @@ export function PropertyForm({ mode, initial }: { mode: Mode; initial?: Property
     const uploaded: string[] = [];
     try {
       for (const file of Array.from(files)) {
-        const ext = file.name.split(".").pop() || "jpg";
-        const path = `${crypto.randomUUID()}.${ext}`;
+        // Watermark + resize before storing
+        const processed = await processPropertyImage(file);
+        const path = `${crypto.randomUUID()}.jpg`;
         const { error: upErr } = await supabase.storage
           .from("property-images")
-          .upload(path, file, { contentType: file.type, upsert: false });
+          .upload(path, processed, { contentType: "image/jpeg", upsert: false });
         if (upErr) throw upErr;
         const { data } = supabase.storage.from("property-images").getPublicUrl(path);
         uploaded.push(data.publicUrl);
@@ -261,7 +263,7 @@ export function PropertyForm({ mode, initial }: { mode: Mode; initial?: Property
           <Label htmlFor="files">Upload (the first image is used as the cover)</Label>
           <label className="mt-2 flex cursor-pointer items-center justify-center gap-2 rounded-md border-2 border-dashed border-input p-8 text-sm text-muted-foreground hover:border-primary">
             <Upload className="h-4 w-4" />
-            <span>{uploading ? "Uploading…" : "Click to choose images"}</span>
+            <span>{uploading ? "Processing & uploading…" : "Click to choose images"}</span>
             <input
               id="files"
               type="file"
@@ -271,6 +273,9 @@ export function PropertyForm({ mode, initial }: { mode: Mode; initial?: Property
               onChange={(e) => e.target.files && uploadFiles(e.target.files)}
             />
           </label>
+          <p className="text-xs text-muted-foreground mt-1.5">
+            Images are automatically watermarked with <span className="font-medium">oaksandbims.com</span> before upload.
+          </p>
         </div>
         {images.length > 0 && (
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
