@@ -142,14 +142,14 @@ export function SalesDashboard({
   return (
     <div className="space-y-6">
       {/* ── Filters + Actions ── */}
-      <div className="flex flex-wrap items-end gap-3 no-print">
-        <div className="flex flex-wrap gap-2">
+      <div className="space-y-3 no-print">
+        <div className="flex flex-wrap items-end gap-2">
           <div>
             <label className="text-xs text-muted-foreground block mb-1">Year</label>
             <Select
               value={String(year)}
               onChange={(e) => navigate({ year: e.target.value, month: "" })}
-              className="w-28"
+              className="w-24"
             >
               {years.map((y) => <option key={y} value={y}>{y}</option>)}
             </Select>
@@ -159,7 +159,7 @@ export function SalesDashboard({
             <Select
               value={month ? String(month) : ""}
               onChange={(e) => navigate({ month: e.target.value })}
-              className="w-36"
+              className="w-32"
             >
               <option value="">All months</option>
               {MONTH_NAMES.map((name, i) => (
@@ -172,7 +172,7 @@ export function SalesDashboard({
             <Select
               value={statusFilter}
               onChange={(e) => navigate({ status: e.target.value })}
-              className="w-36"
+              className="w-32"
             >
               <option value="all">All statuses</option>
               <option value="paid">Paid</option>
@@ -180,48 +180,49 @@ export function SalesDashboard({
               <option value="cancelled">Cancelled</option>
             </Select>
           </div>
+
+          <div className="flex flex-wrap gap-2 sm:ml-auto items-end">
+            <Button variant="outline" size="sm" onClick={downloadCSV} disabled={receipts.length === 0}>
+              <Download className="h-4 w-4" /> CSV
+            </Button>
+            {sent ? (
+              <Button variant="outline" size="sm" disabled>
+                <Check className="h-4 w-4 text-emerald-600" /> Sent
+              </Button>
+            ) : !showEmailInput ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => { setSent(false); setShowEmailInput(true); }}
+                disabled={receipts.length === 0}
+              >
+                <Mail className="h-4 w-4" /> Email report
+              </Button>
+            ) : null}
+          </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 ml-auto items-end">
-          <Button variant="outline" size="sm" onClick={downloadCSV} disabled={receipts.length === 0}>
-            <Download className="h-4 w-4" /> Download CSV
-          </Button>
-
-          {sent ? (
-            <Button variant="outline" size="sm" disabled>
-              <Check className="h-4 w-4 text-emerald-600" /> Report sent
+        {showEmailInput && (
+          <form onSubmit={sendReport} className="flex flex-wrap gap-2 items-center">
+            <input
+              type="email"
+              required
+              autoFocus
+              placeholder="recipient@email.com"
+              value={reportEmail}
+              onChange={(e) => setReportEmail(e.target.value)}
+              className="h-9 flex-1 min-w-[200px] rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+            <Button type="submit" size="sm" disabled={sending}>
+              {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+              Send
             </Button>
-          ) : showEmailInput ? (
-            <form onSubmit={sendReport} className="flex gap-2 items-center">
-              <input
-                type="email"
-                required
-                autoFocus
-                placeholder="recipient@email.com"
-                value={reportEmail}
-                onChange={(e) => setReportEmail(e.target.value)}
-                className="h-9 rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring w-52"
-              />
-              <Button type="submit" size="sm" disabled={sending}>
-                {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
-                Send
-              </Button>
-              <Button type="button" variant="ghost" size="sm" onClick={() => setShowEmailInput(false)}>
-                Cancel
-              </Button>
-            </form>
-          ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => { setSent(false); setShowEmailInput(true); }}
-              disabled={receipts.length === 0}
-            >
-              <Mail className="h-4 w-4" /> Send report
+            <Button type="button" variant="ghost" size="sm" onClick={() => setShowEmailInput(false)}>
+              Cancel
             </Button>
-          )}
-        </div>
-        {sendError && <p className="w-full text-xs text-destructive">{sendError}</p>}
+          </form>
+        )}
+        {sendError && <p className="text-xs text-destructive">{sendError}</p>}
       </div>
 
       {/* ── Stats cards ── */}

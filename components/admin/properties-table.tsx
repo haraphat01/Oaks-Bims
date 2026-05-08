@@ -74,68 +74,73 @@ export function PropertiesTable({ properties }: { properties: Property[] }) {
       )}
 
       <div className="rounded-xl border overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/50 text-left">
-            <tr>
-              <th className="p-3 w-10">
-                <input
-                  ref={selectAllRef}
-                  type="checkbox"
-                  className="h-4 w-4 rounded"
-                  checked={allChecked}
-                  onChange={toggleAll}
-                  aria-label="Select all"
-                />
-              </th>
-              <th className="p-3 w-16"></th>
-              <th className="p-3">Title</th>
-              <th className="p-3">Location</th>
-              <th className="p-3">Price (₦)</th>
-              <th className="p-3">Status</th>
-              <th className="p-3"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {properties.map((p) => (
-              <tr key={p.id} className={`border-t transition-colors ${selected.has(p.id) ? "bg-primary/5" : "hover:bg-muted/30"}`}>
-                <td className="p-3">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[560px]">
+            <thead className="bg-muted/50 text-left">
+              <tr>
+                <th className="p-3 w-10">
                   <input
+                    ref={selectAllRef}
                     type="checkbox"
                     className="h-4 w-4 rounded"
-                    checked={selected.has(p.id)}
-                    onChange={() => toggle(p.id)}
-                    aria-label={`Select ${p.title}`}
+                    checked={allChecked}
+                    onChange={toggleAll}
+                    aria-label="Select all"
                   />
-                </td>
-                <td className="p-2">
-                  <div className="relative w-12 h-12 rounded-md overflow-hidden bg-muted">
-                    {p.cover_image_url && (
-                      <Image src={p.cover_image_url} alt="" fill className="object-cover" sizes="48px" />
-                    )}
-                  </div>
-                </td>
-                <td className="p-3 font-medium max-w-[200px] truncate">{p.title}</td>
-                <td className="p-3 text-muted-foreground">{p.city}, {p.state}</td>
-                <td className="p-3 font-mono">{Number(p.price_ngn).toLocaleString()}</td>
-                <td className="p-3">
-                  <StatusChanger id={p.id} status={p.status} />
-                </td>
-                <td className="p-3 text-right space-x-2 whitespace-nowrap">
-                  <Link href={`/properties/${p.slug}`} className="text-muted-foreground hover:text-primary text-xs">View</Link>
-                  <Link href={`/admin/properties/${p.id}/edit`} className="text-primary text-xs hover:underline">Edit</Link>
-                </td>
+                </th>
+                <th className="p-3 w-14 hidden sm:table-cell"></th>
+                <th className="p-3">Title</th>
+                <th className="p-3 hidden md:table-cell">Location</th>
+                <th className="p-3">Price (₦)</th>
+                <th className="p-3">Status</th>
+                <th className="p-3"></th>
               </tr>
-            ))}
-            {properties.length === 0 && (
-              <tr>
-                <td className="p-10 text-center text-muted-foreground" colSpan={7}>
-                  No properties found.{" "}
-                  <Link className="text-primary hover:underline" href="/admin/properties/new">Create the first one</Link>.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {properties.map((p) => (
+                <tr key={p.id} className={`border-t transition-colors ${selected.has(p.id) ? "bg-primary/5" : "hover:bg-muted/30"}`}>
+                  <td className="p-3">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 rounded"
+                      checked={selected.has(p.id)}
+                      onChange={() => toggle(p.id)}
+                      aria-label={`Select ${p.title}`}
+                    />
+                  </td>
+                  <td className="p-2 hidden sm:table-cell">
+                    <div className="relative w-11 h-11 rounded-md overflow-hidden bg-muted">
+                      {p.cover_image_url && (
+                        <Image src={p.cover_image_url} alt="" fill className="object-cover" sizes="44px" />
+                      )}
+                    </div>
+                  </td>
+                  <td className="p-3 font-medium max-w-[160px] truncate">
+                    {p.title}
+                    <div className="text-xs text-muted-foreground font-normal md:hidden">{p.city}, {p.state}</div>
+                  </td>
+                  <td className="p-3 text-muted-foreground hidden md:table-cell">{p.city}, {p.state}</td>
+                  <td className="p-3 font-mono text-xs">{Number(p.price_ngn).toLocaleString()}</td>
+                  <td className="p-3">
+                    <StatusChanger id={p.id} status={p.status} />
+                  </td>
+                  <td className="p-3 text-right space-x-2 whitespace-nowrap">
+                    <Link href={`/properties/${p.slug}`} className="text-muted-foreground hover:text-primary text-xs">View</Link>
+                    <Link href={`/admin/properties/${p.id}/edit`} className="text-primary text-xs hover:underline">Edit</Link>
+                  </td>
+                </tr>
+              ))}
+              {properties.length === 0 && (
+                <tr>
+                  <td className="p-10 text-center text-muted-foreground" colSpan={7}>
+                    No properties found.{" "}
+                    <Link className="text-primary hover:underline" href="/admin/properties/new">Create the first one</Link>.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <ConfirmDialog

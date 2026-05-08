@@ -28,13 +28,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   ];
 
   return (
-    <div className="container py-6 md:py-8 grid gap-6 md:gap-8 lg:grid-cols-[220px_1fr]">
+    <div className="container py-4 md:py-8 grid gap-4 md:gap-8 lg:grid-cols-[220px_1fr]">
       <aside className="lg:sticky lg:top-20 self-start">
-        <div className="text-xs uppercase tracking-widest text-muted-foreground mb-2 lg:mb-3">
+        <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1.5 lg:mb-3">
           Admin · {profile?.full_name?.split(" ")[0]}
         </div>
         {/* Mobile: horizontal scroll strip. Desktop: vertical list. */}
-        <nav className="flex lg:flex-col gap-1 overflow-x-auto pb-1 lg:pb-0 -mx-4 px-4 lg:mx-0 lg:px-0">
+        <nav className="flex lg:flex-col gap-1 overflow-x-auto pb-2 lg:pb-0 -mx-4 px-4 lg:mx-0 lg:px-0 border-b lg:border-b-0 mb-2 lg:mb-0">
           {nav.map((n) => (
             <Link
               key={n.href}

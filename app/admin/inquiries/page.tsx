@@ -44,7 +44,7 @@ export default async function AdminInquiriesPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-serif font-semibold">Inquiries</h1>
+        <h1 className="text-2xl sm:text-3xl font-serif font-semibold">Inquiries</h1>
         <p className="text-muted-foreground mt-1">{total} message{total === 1 ? "" : "s"}</p>
       </div>
 

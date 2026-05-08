@@ -47,12 +47,12 @@ export default async function AdminPropertiesPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-3xl font-serif font-semibold">Properties</h1>
+          <h1 className="text-2xl sm:text-3xl font-serif font-semibold">Properties</h1>
           <p className="text-muted-foreground mt-1">{total} listing{total === 1 ? "" : "s"}</p>
         </div>
-        <Button asChild><Link href="/admin/properties/new">+ New property</Link></Button>
+        <Button asChild className="shrink-0"><Link href="/admin/properties/new">+ New property</Link></Button>
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">
